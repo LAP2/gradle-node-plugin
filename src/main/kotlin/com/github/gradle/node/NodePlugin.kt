@@ -5,9 +5,9 @@ import com.github.gradle.node.npm.task.NpmInstallTask
 import com.github.gradle.node.npm.task.NpmSetupTask
 import com.github.gradle.node.npm.task.NpmTask
 import com.github.gradle.node.npm.task.NpxTask
+import com.github.gradle.node.services.NodeRuntime
 import com.github.gradle.node.task.NodeSetupTask
 import com.github.gradle.node.task.NodeTask
-import com.github.gradle.node.variant.VariantComputer
 import com.github.gradle.node.yarn.task.YarnInstallTask
 import com.github.gradle.node.yarn.task.YarnSetupTask
 import com.github.gradle.node.yarn.task.YarnTask
@@ -16,15 +16,42 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.registerIfAbsent
 import org.gradle.util.GradleVersion
 import java.io.File
 
+@Suppress("UnstableApiUsage")
 class NodePlugin : Plugin<Project> {
     private lateinit var project: Project
+
+    private fun experimentalEnabled(): Boolean {
+        return if (GradleVersion.current() >= GradleVersion.version("6.2")) {
+            project.providers.gradleProperty(EXPERIMENTAL_PROP)
+                .forUseAtConfigurationTime()
+                .getOrElse("false").toBoolean()
+        } else {
+            project.properties
+                .getOrDefault(EXPERIMENTAL_PROP, "false").toString().toBoolean()
+        }
+    }
 
     override fun apply(project: Project) {
         this.project = project
         val nodeExtension = NodeExtension.create(project)
+        if (experimentalEnabled()) {
+            val nodeRuntime = project.gradle.sharedServices.registerIfAbsent("nodeRuntime", NodeRuntime::class) {
+                parameters.gradleUserHome.set(project.gradle.gradleUserHomeDir)
+            }
+
+            project.tasks.register("nodeTest") {
+                usesService(nodeRuntime)
+                doLast {
+                    println(nodeRuntime.get().getNode(nodeExtension))
+//                println(nodeRuntime.get().getNodes())
+                }
+            }
+
+        }
         addGlobalTypes()
         addTasks()
         addNpmRule()
@@ -128,5 +155,6 @@ class NodePlugin : Plugin<Project> {
         const val NODE_GROUP = "Node"
         const val NPM_GROUP = "npm"
         const val YARN_GROUP = "Yarn"
+        const val EXPERIMENTAL_PROP = "com.github.gradle.node.experimental"
     }
 }
