@@ -30,6 +30,10 @@ class NodePlugin : Plugin<Project> {
     private lateinit var experimentalEnabled: Property<Boolean>
 
     override fun apply(project: Project) {
+        if (GradleVersion.current() < GradleVersion.version("6.1")) {
+            throw RuntimeException("This plugin version requires Gradle 6.1 or newer.")
+        }
+
         this.project = project
         val nodeExtension = NodeExtension.create(project)
         experimentalEnabled = project.objects.property<Boolean>().convention(false)
