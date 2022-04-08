@@ -76,7 +76,7 @@ class NpmRule_integTest extends AbstractIntegTest {
         then:
         result.task(":npmInstall").outcome == TaskOutcome.SUCCESS
         result.task(":npm_run_npmVersion").outcome == TaskOutcome.SUCCESS
-        def versionPattern = Pattern.compile(".*Version\\s+6.12.0.*", Pattern.DOTALL)
+        def versionPattern = Pattern.compile(".*Version\\s+6.14.10.*", Pattern.DOTALL)
         versionPattern.matcher(result.output).find()
     }
 }

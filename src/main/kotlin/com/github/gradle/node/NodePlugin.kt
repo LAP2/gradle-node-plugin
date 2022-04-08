@@ -174,5 +174,9 @@ class NodePlugin : Plugin<Project> {
         const val NPM_GROUP = "npm"
         const val YARN_GROUP = "Yarn"
         const val EXPERIMENTAL_PROP = "com.github.gradle.node.experimental"
+        const val DETECT_PROP = "com.github.gradle.node.installations.location"
+        const val DOWNLOAD_PROP = "com.github.gradle.node.installations.auto-download"
+        const val URL_PROP = "com.github.gradle.node.installations.baseUrl"
+        const val URL_DEFAULT = "https://nodejs.org/dist"
     }
 }
